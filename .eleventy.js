@@ -5,6 +5,8 @@ const syntaxHighlight = require("@11ty/eleventy-plugin-syntaxhighlight");
 const { DateTime } = require("luxon");
 
 module.exports = function (eleventyConfig) {
+  eleventyConfig.addPassthroughCopy("src/CNAME");
+
   eleventyConfig.addLiquidShortcode("youtube", function (id, title) {
     return `<lite-youtube videoid="${id}" playlabel="${title}"></lite-youtube>`;
   });
