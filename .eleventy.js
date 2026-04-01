@@ -55,7 +55,7 @@ module.exports = function (eleventyConfig) {
   const ignoredFormats = [".svg"];
   const ignoredPages = ["about.html"];
 
-  eleventyConfig.addTransform("transform", (content, outputPath) => {
+  eleventyConfig.addTransform("transform", async (content, outputPath) => {
     function endsWithAny(suffixes, string) {
       return suffixes.some(function (suffix) {
         return string.endsWith(suffix);
@@ -69,44 +69,44 @@ module.exports = function (eleventyConfig) {
 
       const images = [...document.querySelectorAll("img")];
 
-      images.forEach((i, index) => {
-        const src = "./src/" + i.getAttribute("src");
+      await Promise.all(
+        images.map(async (i, index) => {
+          const src = "./src/" + i.getAttribute("src");
 
-        const { ext } = path.parse(src);
-        const { dir } = path.parse(i.getAttribute("src"));
-        if (ignoredFormats.includes(ext)) {
-          // use fs.copyFile to manually copy this file to your output dir
-          return;
-        }
+          const { ext } = path.parse(src);
+          const { dir } = path.parse(i.getAttribute("src"));
+          if (ignoredFormats.includes(ext)) {
+            // use fs.copyFile to manually copy this file to your output dir
+            return;
+          }
 
-        const options = {
-          widths: [1600, 1920, null],
-          sizes: "100vw",
-          formats: ["webp", "jpeg"],
-          urlPath: dir,
-          outputDir: "./docs/" + dir,
-          sharpJpegOptions: { quality: 90 },
-          sharpWebpOptions: { quality: 90 },
-          filenameFormat: function (id, src, width, format, options) {
-            const extension = path.extname(src);
-            const name = path.basename(src, extension);
-            return `${name}-${width}w.${format}`;
-          },
-        };
+          const options = {
+            widths: [1600, 1920, null],
+            sizes: "100vw",
+            formats: ["webp", "jpeg"],
+            urlPath: dir,
+            outputDir: "./docs/" + dir,
+            sharpJpegOptions: { quality: 90 },
+            sharpWebpOptions: { quality: 90 },
+            filenameFormat: function (id, src, width, format, options) {
+              const extension = path.extname(src);
+              const name = path.basename(src, extension);
+              return `${name}-${width}w.${format}`;
+            },
+          };
 
-        const meta = Image.statsSync(src, options);
-        const last = meta.jpeg[meta.jpeg.length - 1];
-        if (last.width < 500) return;
+          const meta = await Image(src, options);
+          const last = meta.jpeg[meta.jpeg.length - 1];
+          if (last.width < 500) return;
 
-        Image(src, options);
-        i.setAttribute("width", last.width);
-        i.setAttribute("height", last.height);
-        if (index !== 0) {
-          i.setAttribute("loading", "lazy");
-          i.setAttribute("decoding", "async");
-        }
+          i.setAttribute("width", last.width);
+          i.setAttribute("height", last.height);
+          if (index !== 0) {
+            i.setAttribute("loading", "lazy");
+            i.setAttribute("decoding", "async");
+          }
 
-        i.outerHTML = `
+          i.outerHTML = `
           <picture>
             <source type="image/webp" sizes="${
               options.sizes
@@ -116,14 +116,15 @@ module.exports = function (eleventyConfig) {
             }" srcset="${meta.jpeg.map((p) => p.srcset).join(", ")}">
             ${i.outerHTML}
           </picture>`;
-      });
+        })
+      );
 
       return `<!DOCTYPE html>${document.documentElement.outerHTML}`;
     }
     return content;
   });
 
-  eleventyConfig.setBrowserSyncConfig({
+  eleventyConfig.setServerOptions({
     middleware: [
       function (req, res, next) {
         if (/^[^.]+$/.test(req.url)) {

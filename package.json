@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "serve": "browser-sync start --server \"docs\" --files \"docs\"",
+    "serve": "browser-sync start --config bs-config.js",
     "build:js": "webpack --mode=production",
     "watch:js": "onchange \"src/js\" -- webpack --mode=development",
     "build:html": "npx @11ty/eleventy",
@@ -32,14 +32,14 @@
   },
   "homepage": "https://github.com/SavioMenifer/savi.oooo#readme",
   "devDependencies": {
-    "@11ty/eleventy": "^1.0.2",
-    "@11ty/eleventy-img": "^2.0.1",
+    "@11ty/eleventy": "^3.1.5",
+    "@11ty/eleventy-img": "^6.0.4",
     "@11ty/eleventy-plugin-syntaxhighlight": "^4.2.0",
     "@babel/preset-env": "^7.22.20",
     "autoprefixer": "^10.4.15",
     "babel-loader": "^8.3.0",
-    "browser-sync": "^2.29.3",
-    "copy-webpack-plugin": "^10.2.4",
+    "browser-sync": "^3.0.4",
+    "copy-webpack-plugin": "^14.0.0",
     "css-loader": "^6.8.1",
     "eslint": "^7.32.0",
     "eslint-webpack-plugin": "^3.2.0",
@@ -60,6 +60,11 @@
     "typescript": "^4.9.5",
     "webpack": "^5.88.2",
     "webpack-cli": "^4.10.0"
+  },
+  "overrides": {
+    "markdown-it-html5-embed": {
+      "markdown-it": ">=12.3.2"
+    }
   },
   "dependencies": {
     "@floating-ui/dom": "^0.4.5",
